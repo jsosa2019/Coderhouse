@@ -11,14 +11,10 @@ let patente ="";
 // recupero BD multas
 cargar_Multas();
 
-// sumar cfg donde poner ruta de json base
-
-
 let totalAPagar = 0;	
 const hoy = new Date();
 
 let botonBuscar = document.getElementById("btnBuscar");
-//botonBuscar.onclick = () => {encontrar_patente(document.getElementById('inputPatente').value); ocultar_comentario();}
 botonBuscar.onclick = () => {encontrar_patente(document.getElementById('inputPatente').value)};
 
 let botonReset = document.getElementById("btnRecargar");
@@ -29,7 +25,7 @@ function encontrar_patente(unaPatente)
 	let infractor = false;
 	let encabezadoPatente = false;
 	patente= unaPatente.toUpperCase()
-	
+
 	// recorro multas buscando patente ingresada
 
 	for (const multa of multas)
@@ -39,46 +35,25 @@ function encontrar_patente(unaPatente)
 			// si no tiene encabezado la patente
 			if (!encabezadoPatente)
 			{
-				let div_encabezado_multa = document.createElement("div");
-				div_encabezado_multa.className = "divEncabezado";
-				div_encabezado_multa.innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${patente} registra las siguientes multas:</h2>`;
-				document.body.appendChild(div_encabezado_multa);
 				encabezadoPatente = true;
+				cargar_encabezado_multas();
 			}
-			
+		
 			infractor = true;
 			// muestro la multa en web
-			let contenedorMulta = document.createElement("div");
-			contenedorMulta.className = "divMultas";
-			let nombre_chk  = "'"+"chk_"+multa.id+"'";
-			contenedorMulta.innerHTML = `<h3> Multa patente: ${multa.patente}</h3>
-										<label for=${nombre_chk}> Multa: ${multa.id}</label>
-									 	<input type = "checkbox" id= ${nombre_chk} class="chk" onclick="seleccionado(${nombre_chk}, ${multa.monto})">
-										<p> Lugar: ${multa.lugar}</p>
-										<p> Fecha: ${multa.fecha}</p>
-										<p> Monto <b>$ ${multa.monto} </b></p>`;
-			document.body.appendChild(contenedorMulta);
+			cargar_web_multas(multa);
 		} 
 	} 
 	
-	// si es una patente sin multas
+	// si es una patente con multas
 	if (infractor)
 	{
 		// recorrer array con multas seleccionadas
-		let totalMultasDiv = document.createElement("div");
-		
-		totalMultasDiv.innerHTML = `<h2 class="total"> Valor total multas a abonar: ${totalAPagar}</h2>
-									<label>Abonar monto seleccionado: </label>
-									<button id="btnPagar" class="btn pagar" onclick=mostrarSeleccion()>Aceptar</button>`;
-		document.body.appendChild(totalMultasDiv);
-	} 
+		mostrar_web_tot_pagar();
+	}	
 	else
 	{
-		let msgNoMultas = document.createElement("div");
-		msgNoMultas.className = "divNoMultas";
-		msgNoMultas.innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${unaPatente.toUpperCase()}</h2>
-								<p><b>No registras multas.</b></p>`;
-		document.body.appendChild(msgNoMultas);
+		mostrar_web_no_debe();
 
 	}	
 } 		
@@ -135,8 +110,7 @@ function seleccionado(cBoxId,unMonto)
 		totalAPagar = totalAPagar + unMonto;
 		// cargo en vector de id de multas seleccionadas
 		multasSelec.push(multID[1]);
-		// console.log(multasSelec);
-		
+	
 	} 
 	else 
 	{
@@ -144,7 +118,6 @@ function seleccionado(cBoxId,unMonto)
 		totalAPagar = totalAPagar - unMonto;
 		// quito en vector de id de multas seleccionadas
 		eliminarDeArray(multID[1]);
-		//	console.log(multasSelec);
 	} 
 	actualizarValorPago(totalAPagar);
 }		
@@ -162,21 +135,15 @@ function mostrarSeleccion()
 {
 	// recorre la base de multas y traigo los ID seleccionados
 
-	//  oculto las divNoseleccionados y botón acepta*/
-	/* sumo un btn aceptar y otro cancelar */
-	// ocultar los chkbox */
-
-
 	let elEncabezado = document.getElementsByClassName("divEncabezado");
 	elEncabezado[0].innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${patente} seleccionó las siguientes multas a abonar:</h2>`;
 	
 	let divAOcultar = document.getElementsByClassName("divMultas");
-	//console.log (divAOcultar.length);
 
 	for(let i=0; i < divAOcultar.length; i++)
 	{
-		//divAOcultar[i].remove();
-		//console.log(divAOcultar[i]);
+		divAOcultar[i].remove();
+		console.log(divAOcultar[i]);
 	}
 	
 	let divElegido = document.getElementsByClassName("seleccionado");
@@ -188,58 +155,29 @@ function mostrarSeleccion()
 		let unDiv = divElegido[i];
 		//obtengo el chk hijo
 		let chks = unDiv.getElementsByClassName("chk");
-		//console.log(chks[0]);
-		//console.log(unDiv);
 		chks[0].remove();
 	}
 	
 	let unBtn = document.getElementById("btnPagar");
 	unBtn.remove();
 
+	let elLabel = document.getElementsByClassName("lblPago");
+	elLabel[0].innerText = "Confirma realizar el pago seleccionado?";
 	let contenedorBotones = document.createElement("div");
 
 	contenedorBotones.innerHTML = `<button id="btnAceptarPago" class="btn pagar" onclick="compraRealizada()">Aceptar</button>
 								   <button id="btnCancelararPago" class="btn pagar" onclick="cancelarBtn()">Cancelar</button>`;
 		
-	//let btnAceptar = document.createElement("button");
-	//let btnCancelar = document.createElement("button");
-	//btnAceptar.innerHTML = `<button id="btnAceptarPago" class="btn pagar">Aceptar</button>`;
-	//btnCancelar.innerHTML = `<button id="btnCancelararPago" class="btn cancelar">Cancelar</button>`;
-	//document.body.appendChild(btnAceptar);
 	document.body.appendChild(contenedorBotones);
 
 
 	if (multasSelec.length > 0)
 	{
-		//let nuevaVentana = window.open("resultado.html", "Listado de multas a pagar");
-		//const otroDocumento = nuevaVentana.document;
-		//otroDocumento = document.
-
+		
     	let div_encabezado_multa = document.createElement("div");
 		div_encabezado_multa.className = "divEncabezadoMulta";
 		div_encabezado_multa.innerHTML = '<h2> Primer ingreso</h2>';
-                
-	//	console.log(multasSelec);
-		
-	//	for (const laMulta of multasSelec)
-		for (let x = 0; x < multasSelec.length; x++ )
-		{
-		//	console.log(multasSelec[x]);
-			//div_encabezado_multa.innerHTML = '<h2> ${laMulta[x]} </h2>';
-		
-			/* 
-			
-			let div_multa = document.createElement("div");
-			div_multa.className = "divEncabezadoMulta";
-			div_multa.innerHTML = '<h2> Primer ingreso</h2>';
-        	div_multa.innerHTML = '<h2> '+ multasSelec[x]+'</h2>';
-			document.body.appendChild(div_multa);
-
-			*/
-
-			//${multa.lugar}
-			//<h2> Segunda '+multasSelec[1]+'</h2><h2> Tercer '+multasSelec[2]+'</h2>';
-		}
+    
 	}
 	else
 	{
@@ -264,4 +202,46 @@ function compraRealizada()
 {
 	alert ("Gracias por su pago");
 	location.reload();
+}
+
+function cargar_web_multas(laMulta)
+{
+			// muestro la multa en web
+	let contenedorMulta = document.createElement("div");
+	contenedorMulta.className = "divMultas";
+	let nombre_chk  = "'"+"chk_"+laMulta.id+"'";
+	contenedorMulta.innerHTML = `<h3> Multa patente: ${laMulta.patente}</h3>
+								<label for=${nombre_chk}> Multa: ${laMulta.id}</label>
+								<input type = "checkbox" id= ${nombre_chk} class="chk" onclick="seleccionado(${nombre_chk}, ${laMulta.monto})">
+								<p> Lugar: ${laMulta.lugar}</p>
+								<p> Fecha: ${laMulta.fecha}</p>
+								<p> Monto <b>$ ${laMulta.monto} </b></p>`;
+	document.body.appendChild(contenedorMulta);
+}
+
+function cargar_encabezado_multas()
+
+{
+	let div_encabezado_multa = document.createElement("div");
+	div_encabezado_multa.className = "divEncabezado";
+	div_encabezado_multa.innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${patente} registra las siguientes multas:</h2>`;
+	document.body.appendChild(div_encabezado_multa);
+}
+
+function mostrar_web_tot_pagar()
+{
+	let totalMultasDiv = document.createElement("div");
+		totalMultasDiv.innerHTML = `<h2 class="total" id="divTotal"> Valor total multas a abonar: ${totalAPagar}</h2>
+									<label class="lblPago" >Abonar monto seleccionado: </label>
+									<button id="btnPagar" class="btn pagar" onclick=mostrarSeleccion()>Aceptar</button>`;
+		document.body.appendChild(totalMultasDiv);
+}
+
+function mostrar_web_no_debe()
+{
+	let msgNoMultas = document.createElement("div");
+		msgNoMultas.className = "divNoMultas";
+		msgNoMultas.innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${patente}</h2>
+								<p><b>No registras multas.</b></p>`;
+		document.body.appendChild(msgNoMultas);
 }
