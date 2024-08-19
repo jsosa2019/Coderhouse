@@ -1,0 +1,80 @@
+[
+	{
+		"id":"010",
+		"fecha":"12/09/14",
+		"patente":"UCL399",
+		"monto":7500,
+		"lugar":"Lobos"
+	},
+	{
+		"id":"015",
+		"fecha":"21/03/14",
+		"patente":"MNU050",
+		"monto":12000,
+		"lugar":"La Plata"
+	},
+	{
+		"id":"021",
+		"fecha":"05/01/15",
+		"patente":"JKT113",
+		"monto":12000,
+		"lugar":"Olivos"
+	},
+	{
+		"id":"026",
+		"fecha":"30/11/16",
+		"patente":"UCL399",
+		"monto":12000,
+		"lugar":"Ensenada"
+	},
+	{
+		"id":"041",
+		"fecha":"12/09/14",
+		"patente":"DLU098",
+		"monto":4500,
+		"lugar":"Rauch"
+	},
+	{
+		"id":"083",
+		"fecha":"12/09/17",
+		"patente":"MNU050",
+		"monto":7500,
+		"lugar":"San Fernando"
+	},
+	{
+		"id":"110",
+		"fecha":"22/09/18",
+		"patente":"JKT113",
+		"monto":7500,
+		"lugar":"Avellaneda"
+	},
+	{
+		"id":"125",
+		"fecha":"03/09/19",
+		"patente":"JYR312",
+		"monto":45000,
+		"lugar":"Zárate"
+	},
+	{
+		"id":"210",
+		"fecha":"09/09/19",
+		"patente":"MNU050",
+		"monto":17500,
+		"lugar":"San Isidro"
+	},
+	{
+		"id":"217",
+		"fecha":"14/09/19",
+		"patente":"UCL399",
+		"monto":14500,
+		"lugar":"San Pedro"
+	}
+]
+  
+  
+  
+  
+  
+  
+  
+  
