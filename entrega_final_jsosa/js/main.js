@@ -1,6 +1,7 @@
 
 // array de multas
 const multas = [];
+const misMultas = [];
 const multasSelec = [];
 let cont=0;	
 let cantidadMultasBD = 0;
@@ -9,7 +10,7 @@ let patente ="";
 
 
 // recupero BD multas
-cargar_Multas();
+traer_multas_db();
 
 let totalAPagar = 0;	
 const hoy = new Date();
@@ -41,7 +42,9 @@ function encontrar_patente(unaPatente)
 		
 			infractor = true;
 			// muestro la multa en web
+
 			cargar_web_multas(multa);
+			misMultas.push(multa);
 		} 
 	} 
 	
@@ -54,12 +57,13 @@ function encontrar_patente(unaPatente)
 	else
 	{
 		mostrar_web_no_debe();
-
 	}	
 } 		
 	
 function dar_fecha(fecha) 
 {
+	// dar fecha de hoy
+
 	let dd = fecha.getDate();
 	let mm = fecha.getMonth() + 1;
 	let aa = fecha.getFullYear().toString().slice(-2);
@@ -67,7 +71,7 @@ function dar_fecha(fecha)
 }
 
 
-function cargar_Multas ()
+function traer_multas_db()
 {
 	// recupero multas de BD y las cargo en array multas
 
@@ -98,78 +102,80 @@ function cargar_Multas ()
 			});
 }	
 
-function seleccionado(cBoxId,unMonto)
+function cambia_chkbox(cBoxId,unMonto)
 {
-	
+	// cambio el color del div de la multa, agrego a array de seleccionados para pago
 	let caja = document.getElementById(cBoxId);
 
 	let multID = cBoxId.split("_");
+	let laMultID = multID[1];
 	if (caja.checked == true)
 	{
 		caja.parentNode.setAttribute("class", "seleccionado"); 
 		totalAPagar = totalAPagar + unMonto;
 		// cargo en vector de id de multas seleccionadas
-		multasSelec.push(multID[1]);
-	
+		for (const uMulta of misMultas)
+		{
+			if (uMulta.id == laMultID)
+			{
+				multasSelec.push(uMulta);
+			}	
+		}	
 	} 
 	else 
 	{
 		caja.parentNode.setAttribute("class", "divMultas"); 
 		totalAPagar = totalAPagar - unMonto;
 		// quito en vector de id de multas seleccionadas
-		eliminarDeArray(multID[1]);
+
+		for (const uMulta of misMultas)
+		{
+				if (uMulta.id == laMultID)
+				{
+					eliminarDeArray(uMulta);
+				}	
+		}	
 	} 
 	actualizarValorPago(totalAPagar);
 }		
 
-// actualizo el valor total a pagar
+
 function actualizarValorPago(unMontoAPagar)
 {
-	// modifico el valor total a pagar
+	// actualizo el valor total a pagar
+
 	let h2Pago = document.querySelector("h2.total");
 	h2Pago.innerText='Valor total multas a abonar: '+ unMontoAPagar;
 }
 
-// muestro en otra página las multas seleccionadas a abonar
+
 function mostrarSeleccion()
 {
-	// recorre la base de multas y traigo los ID seleccionados
+	// muestro las multas seleccionadas a abonar
 
 	let elEncabezado = document.getElementsByClassName("divEncabezado");
 	elEncabezado[0].innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${patente} seleccionó las siguientes multas a abonar:</h2>`;
 	
-	let divAOcultar = document.getElementsByClassName("divMultas");
+	borrar_div_multas();
+	borrar_div_tot_pagar();
 
-	for(let i=0; i < divAOcultar.length; i++)
+	for(const unaMulta of multasSelec)
 	{
-		divAOcultar[i].remove();
-		console.log(divAOcultar[i]);
+		cargar_web_mis_multas(unaMulta);
 	}
 	
-	let divElegido = document.getElementsByClassName("seleccionado");
+	let totalMultasDiv = document.createElement("div");
+		totalMultasDiv.className = "totAPagar";
+		totalMultasDiv.setAttribute("id","totAPagarFin");
+		totalMultasDiv.innerHTML = `<h2 class="total" id="divTotal"> Valor total multas a abonar: <b>$ ${totalAPagar}</b></h2>
+									<label class="lblPago" >Confirma abonar el monto seleccionado? </label>`;
+		document.body.appendChild(totalMultasDiv);
 
-	// saco los chks de las multas seleccionadas
-	for(let i=0; i < divElegido.length; i++)
-	{
-		//obtengo los nodos div clase seleccionados
-		let unDiv = divElegido[i];
-		//obtengo el chk hijo
-		let chks = unDiv.getElementsByClassName("chk");
-		chks[0].remove();
-	}
-	
-	let unBtn = document.getElementById("btnPagar");
-	unBtn.remove();
-
-	let elLabel = document.getElementsByClassName("lblPago");
-	elLabel[0].innerText = "Confirma realizar el pago seleccionado?";
 	let contenedorBotones = document.createElement("div");
-
-	contenedorBotones.innerHTML = `<button id="btnAceptarPago" class="btn pagar" onclick="compraRealizada()">Aceptar</button>
+		contenedorBotones.setAttribute("id","btnFinales");
+		contenedorBotones.innerHTML = `<button id="btnAceptarPago" class="btn pagar" onclick="compraRealizada()">Aceptar</button>
 								   <button id="btnCancelararPago" class="btn pagar" onclick="cancelarBtn()">Cancelar</button>`;
-		
-	document.body.appendChild(contenedorBotones);
-
+		document.body.appendChild(contenedorBotones);
 
 	if (multasSelec.length > 0)
 	{
@@ -177,20 +183,21 @@ function mostrarSeleccion()
     	let div_encabezado_multa = document.createElement("div");
 		div_encabezado_multa.className = "divEncabezadoMulta";
 		div_encabezado_multa.innerHTML = '<h2> Primer ingreso</h2>';
-    
-	}
+    }
 	else
 	{
 		alert("No tiene cargado multas a abonar");
 	}
 }
 
-// elimino del array el id indicado
-function eliminarDeArray(unValor)
+
+function eliminarDeArray(objMulta)
 {
-	let indice = multasSelec.indexOf(unValor); 
+	// elimino del array el id indicado
+
+	let indice = multasSelec.indexOf(objMulta);
 	multasSelec.splice(indice, 1); 
-	
+
 }
 
 function cancelarBtn()
@@ -206,32 +213,41 @@ function compraRealizada()
 
 function cargar_web_multas(laMulta)
 {
-			// muestro la multa en web
+	// muestro la multa en web
+
 	let contenedorMulta = document.createElement("div");
+	let contenedorGeneral = document.getElementById("contenedorGral");
+
 	contenedorMulta.className = "divMultas";
 	let nombre_chk  = "'"+"chk_"+laMulta.id+"'";
 	contenedorMulta.innerHTML = `<h3> Multa patente: ${laMulta.patente}</h3>
 								<label for=${nombre_chk}> Multa: ${laMulta.id}</label>
-								<input type = "checkbox" id= ${nombre_chk} class="chk" onclick="seleccionado(${nombre_chk}, ${laMulta.monto})">
+								<input type = "checkbox" id= ${nombre_chk} class="chk" onclick="cambia_chkbox(${nombre_chk}, ${laMulta.monto})">
 								<p> Lugar: ${laMulta.lugar}</p>
 								<p> Fecha: ${laMulta.fecha}</p>
 								<p> Monto <b>$ ${laMulta.monto} </b></p>`;
-	document.body.appendChild(contenedorMulta);
+	contenedorGeneral.appendChild(contenedorMulta);
 }
 
 function cargar_encabezado_multas()
-
 {
+	// cargo info de la fecha y la patente
+
 	let div_encabezado_multa = document.createElement("div");
-	div_encabezado_multa.className = "divEncabezado";
-	div_encabezado_multa.innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${patente} registra las siguientes multas:</h2>`;
-	document.body.appendChild(div_encabezado_multa);
+		div_encabezado_multa.className = "divEncabezado";
+		div_encabezado_multa.innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${patente} registra las siguientes multas:</h2>`;
+		document.body.appendChild(div_encabezado_multa);
+		cargar_contenedor_gral()
 }
 
 function mostrar_web_tot_pagar()
 {
+	// muestro el valor a abonar
+
 	let totalMultasDiv = document.createElement("div");
-		totalMultasDiv.innerHTML = `<h2 class="total" id="divTotal"> Valor total multas a abonar: ${totalAPagar}</h2>
+		totalMultasDiv.className = "totAPagar";
+		totalMultasDiv.setAttribute("id","totAPagar");
+		totalMultasDiv.innerHTML = `<h2 class="total" id="divTotal"> Valor total multas a abonar: <b>$ ${totalAPagar}</b></h2>
 									<label class="lblPago" >Abonar monto seleccionado: </label>
 									<button id="btnPagar" class="btn pagar" onclick=mostrarSeleccion()>Aceptar</button>`;
 		document.body.appendChild(totalMultasDiv);
@@ -239,9 +255,51 @@ function mostrar_web_tot_pagar()
 
 function mostrar_web_no_debe()
 {
+	// informo que no tiene multas impagas
+
 	let msgNoMultas = document.createElement("div");
 		msgNoMultas.className = "divNoMultas";
 		msgNoMultas.innerHTML = `<h2> Al día de la fecha ${dar_fecha(hoy)}, la patente: ${patente}</h2>
 								<p><b>No registras multas.</b></p>`;
 		document.body.appendChild(msgNoMultas);
+}
+
+function borrar_div_multas()
+{
+	// borro el div contenedor de todas las multas de una patente
+
+	let elDivGeneral = document.getElementById("contenedorGral");
+	elDivGeneral.remove();
+}
+
+function cargar_web_mis_multas(esaMulta)
+{
+	// muestro mis multas seleccionadas
+
+	cargar_contenedor_gral();
+	let contenedorMulta = document.createElement("div");
+	let contenedorGeneral = document.getElementById("contenedorGral");
+
+	contenedorMulta.className = "divMultas";
+	contenedorMulta.innerHTML = `<h3> Multa patente: ${esaMulta.patente}</h3>
+								<p> Multa: ${esaMulta.id}</p>
+								<p> Lugar: ${esaMulta.lugar}</p>
+								<p> Fecha: ${esaMulta.fecha}</p>
+								<p> Monto <b>$ ${esaMulta.monto} </b></p>`;
+	contenedorGeneral.appendChild(contenedorMulta);
+}
+
+function cargar_contenedor_gral()
+{
+	// cargo el contenedor general
+
+	let contenedorMulta = document.createElement("div");
+		contenedorMulta.className = "contenedorMultas";
+		contenedorMulta.setAttribute("id","contenedorGral");
+		document.body.appendChild(contenedorMulta);
+}
+function borrar_div_tot_pagar()
+{
+	let divTotPag = document.getElementById("totAPagar");
+	divTotPag.remove();
 }
